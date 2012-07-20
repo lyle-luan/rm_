@@ -1,0 +1,175 @@
+#!/bin/bash
+#
+#SCRIPT: rm_
+#AUTHOR: lyle
+#DATE: 12/7/2012
+#REV: 0.0.B (Valid are A,B,D,T and P)
+#			(FOR Alpha,Beta,Dev,Test,Production)
+#
+#PLATFORM: Linux UBUNTU 10.04LTS
+#
+#PURPOSE: 在LINUX下RM删除后，因为EXT3文件系统的原因，无法恢复，本脚本的
+#	作用就是删除时并不直接删除，而是存放到其他文件下。
+#	PS：若有误操作可以使用工具http://extundelete.sourceforge.net/ 恢复。
+#
+#DESCRIPTION:现在支持i选项，只能一次删除一个文件，错误检查也不全面
+####################
+THIS_SCRIPT=$(basename $0)
+#提示标记
+i_flag=0
+#将要删除的文件名
+file_name=
+#将要删除文件的绝对路径
+rm_file=
+#判断目录类型
+up=
+#C程序回收站
+c_trash=~/.trash_c
+#SHELL程序回收站
+sh_trash=~/.trash_sh
+#TARBALL文件回收站
+tar_trash=~/.trash_tar
+#其他文件类型
+o_trash=~/.trash_o
+#目录文件
+dir_trash=~/.trash_dir
+#文件类型
+file_type=
+#文件后缀
+file_suffix=
+y_n=
+#####################
+#FUNCTION
+#####################
+usage()
+{
+	echo -e "USAGE:$THIS_SCRIPT [OPTION]... FILE..."
+}
+confirm()
+{
+	if [ "$i_flag" = "1" ]; then
+	#是否打开i开关
+		echo rm_: 是否删除$file_suffix文件$file_name"?"
+		while read y_n
+		do
+			case "$y_n" in
+				[Yy]|[Yy][Ee][Ss] )
+				return 0
+				;;
+				[Nn]|[Oo] )
+				return 1
+				;;
+				* ) echo 请输入yes或者no:
+			esac
+		done
+	else
+		return 0
+	fi
+}
+rm_f()
+{
+	file_suffix=${file_name##*.}
+	if [ "$file_suffix" = "c" ]; then
+	#为C程序文件
+		if confirm ; then
+			if [ -d $c_trash ]; then
+				:
+			else
+				mkdir $c_trash
+			fi
+			mv $rm_file $c_trash
+		fi
+		return 1
+	fi
+	if [ "$file_suffix" = "sh" ]; then
+		#为SHELL文件
+		if confirm ; then
+			if [ -d $sh_trash ]; then
+				:
+			else
+				mkdir $sh_trash
+			fi
+			mv $rm_file $sh_trash
+		fi
+		return 1
+	fi
+	if [[ "$file_suffix" =~ tar|zip|gz|bz(2)?|Z|rar|deb|apk ]]; then
+		#为tarball文件
+		if confirm ; then
+			if [ -d $tar_trash ]; then
+				:
+			else
+				mkdir $tar_trash
+			fi
+			mv $rm_file $tar_trash
+		fi
+		return 1
+	fi
+	if [ -d $rm_file ]; then
+		#为目录文件
+		file_suffix=d
+		if confirm ; then
+			if [ -d $dir_trash ]; then
+				:
+			else
+				mkdir $dir_trash
+			fi
+			mv $rm_file $dir_trash
+		fi
+		return 1
+	fi
+	#其他文件
+	file_suffix=o
+	if confirm ; then
+		if [ -d $o_trash ]; then
+			:
+		else
+			mkdir $o_trash
+		fi
+		mv $rm_file $o_trash
+	fi
+}
+#####################
+#MAIN
+####################
+if ! (( $# >= 1 )); then
+	usage
+	exit 1
+fi
+#获得rm_命令参数
+while getopts fiIrR options 2>/dev/null
+do
+	case "$options" in
+		[Ii])	i_flag=1
+		;;
+	esac
+done
+
+#读取将要删除的文件名
+file_name=$@
+file_name=${file_name##* }
+rm_file=$file_name
+#获得绝对路径，主要分'.'开头，'/'开头，'~'开头,以文件为开头
+up=${rm_file%%/*}
+#若rm_file为～*这种格式，则在SHELL内部解释为/home/username
+if [ "$up" = "." ]; then
+	dir=$PWD
+	rm_file=${dir}${rm_file#*.}
+else if [ "$up" = "" ]; then
+	:
+else
+#在当前目录只输入文件的情况
+	dir=$PWD
+	rm_file=${dir}/${rm_file}
+fi
+fi
+#判断文件类型
+if [ -f $rm_file ]; then
+	rm_f
+else if [ -d $rm_file ]; then 
+	rm_f
+else
+	echo 不好意思，暂时删除不了
+fi
+fi
+#End of script
