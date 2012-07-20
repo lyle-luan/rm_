@@ -38,6 +38,8 @@ file_type=
 #文件后缀
 file_suffix=
 y_n=
+magic_c=,
+name_af_rm=
 #####################
 #FUNCTION
 #####################
@@ -77,7 +79,8 @@ rm_f()
 			else
 				mkdir $c_trash
 			fi
-			mv $rm_file $c_trash
+			name_af_rm=${rm_file////$magic_c}
+			mv $rm_file ${c_trash}/${name_af_rm}
 		fi
 		return 1
 	fi
@@ -89,7 +92,8 @@ rm_f()
 			else
 				mkdir $sh_trash
 			fi
-			mv $rm_file $sh_trash
+			name_af_rm=${rm_file////$magic_c}
+			mv $rm_file ${sh_trash}/${name_af_rm}
 		fi
 		return 1
 	fi
@@ -101,7 +105,8 @@ rm_f()
 			else
 				mkdir $tar_trash
 			fi
-			mv $rm_file $tar_trash
+			name_af_rm=${rm_file////$magic_c}
+			mv $rm_file ${tar_trash}/${name_af_rm}
 		fi
 		return 1
 	fi
@@ -114,7 +119,8 @@ rm_f()
 			else
 				mkdir $dir_trash
 			fi
-			mv $rm_file $dir_trash
+			name_af_rm=${rm_file////$magic_c}
+			mv $rm_file ${dir_trash}/${name_af_rm}
 		fi
 		return 1
 	fi
@@ -126,7 +132,8 @@ rm_f()
 		else
 			mkdir $o_trash
 		fi
-		mv $rm_file $o_trash
+		name_af_rm=${rm_file////$magic_c}
+		mv $rm_file ${o_trash}/${name_af_rm}
 	fi
 }
 #####################
