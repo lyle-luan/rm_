@@ -1,5 +1,6 @@
 #!/bin/bash
 #测试文件
+#简单的测试最基本的功能
 #删除回收站,避免回收站中的重名
 if [ -d ~/.trash_c ]; then
 	rm -r ~/.trash_c
